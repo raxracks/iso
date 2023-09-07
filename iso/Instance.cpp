@@ -6,34 +6,34 @@ Instance::Instance(std::string type)
     Name = type;
 }
 
-Instance::Instance(std::string type, Instance* parent)
+Instance::Instance(std::string type, std::shared_ptr<Instance> parent)
 {
     Type = type;
     Name = type;
     SetParent(parent);
 }
 
-Instance* Instance::FindFirstChild(std::string name)
+std::shared_ptr<Instance> Instance::FindFirstChild(std::string name)
 {
-    auto it = std::ranges::find_if(children, [&](Instance child) {
-        return child.Name == name;
+    auto it = std::ranges::find_if(children, [&](auto& child) {
+        return child->Name == name;
     });
 
     if (it != children.end())
-        return &(*it);
+        return *it;
     else
         return nullptr;
 }
 
-std::vector<Instance> Instance::GetChildren()
+std::vector<std::shared_ptr<Instance>> Instance::GetChildren()
 {
     return children;
 }
 
-void Instance::SetParent(Instance* parent)
+void Instance::SetParent(std::shared_ptr<Instance> parent)
 {
     Parent = parent;
-    Parent->children.push_back(*this);
+    Parent->children.push_back(std::make_unique<Instance>(*this));
 }
 
 bool Instance::IsA(std::string type)
@@ -41,7 +41,7 @@ bool Instance::IsA(std::string type)
     return Type == type;
 }
 
-Instance* Instance::Index(std::string name)
+std::shared_ptr<Instance> Instance::Index(std::string name)
 {
     if (name == "Parent")
         return Parent;
@@ -49,7 +49,7 @@ Instance* Instance::Index(std::string name)
     return FindFirstChild(name);
 }
 
-void Instance::NewIndex(std::string key, Instance* parent)
+void Instance::NewIndex(std::string key, std::shared_ptr<Instance> parent)
 {
     if (key == "Parent")
         SetParent(parent);

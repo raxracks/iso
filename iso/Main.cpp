@@ -1,8 +1,7 @@
-#define RAYLIB_NUKLEAR_IMPLEMENTATION
-#include "raylib-nuklear.h"
-
 #include "Instance.hpp"
 #include "Usertypes.hpp"
+#include "rlImGui/rlImGui.h"
+#include <imgui.h>
 #include <iostream>
 #include <ranges>
 #include <raylib.h>
@@ -10,11 +9,34 @@
 #include <sol/sol.hpp>
 #include <vector>
 
+static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
+static int selection_mask = (1 << 2);
+int node_clicked = -1;
+
+void DrawChildren(std::shared_ptr<Instance> p)
+{
+    for (int i = 0; i < p->children.size(); i++) {
+        ImGuiTreeNodeFlags node_flags = base_flags;
+        const bool is_selected = node_clicked == i;
+        if (is_selected)
+            node_flags |= ImGuiTreeNodeFlags_Selected;
+
+        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, p->children.at(i)->Name.c_str());
+        if (ImGui::IsItemClicked())
+            node_clicked = i;
+        if (node_open) {
+            if (p->children.at(i)->children.size() > 0)
+                DrawChildren(p->children.at(i));
+            ImGui::TreePop();
+        }
+    }
+}
+
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 600, "iso");
-    struct nk_context* ctx = InitNuklear(20);
+    rlImGuiSetup(true);
 
     Camera3D camera {};
     camera.fovy = 30.0f;
@@ -34,33 +56,37 @@ int main()
     Usertypes usertypes(lua);
     usertypes.RegisterUsertypes();
 
-    Instance game("game");
-    Instance workspace("Workspace");
-    workspace.SetParent(&game);
+    std::shared_ptr<Instance> game = std::make_shared<Instance>("game");
+    std::shared_ptr<Instance> workspace = std::make_shared<Instance>("Workspace");
+    workspace->SetParent(game);
 
-    lua.open_libraries(sol::lib::base);
-    lua.set("game", &game);
-    lua.set("workspace", &workspace);
+    for (int i = 0; i < 100; i++) {
+        std::shared_ptr<Instance> part = std::make_shared<Instance>("Part");
+        part->Name = std::to_string(i);
+        std::shared_ptr<Instance> a = std::make_shared<Instance>("a");
+        std::make_shared<Instance>("b", a);
+        a->SetParent(part);
+        part->SetParent(workspace);
+    }
+
+    /*lua.open_libraries(sol::lib::base);
+    lua.set("game", game);
+    lua.set("workspace", workspace);
     lua.safe_script(R"(
 for i = 0, 100 do
     local part = Instance.new("Part")
     part.Name = tostring(i)
     part.Parent = workspace
+
+    Instance.new("Part", part)
 end
-)");
+)");*/
+
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
     SetTargetFPS(60);
     while (!WindowShouldClose()) {
-        UpdateNuklear(ctx);
-
-        if (nk_begin(ctx, "Nuklear", nk_rect(100, 100, 220, 220),
-                NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_CLOSABLE)) {
-            if (nk_button_label(ctx, "Button")) {
-                // Button was clicked!
-            }
-        }
-        nk_end(ctx);
-
         BeginDrawing();
         {
             ClearBackground(WHITE);
@@ -70,11 +96,22 @@ end
             }
             EndMode3D();
 
-            DrawNuklear(ctx);
+            rlImGuiBegin();
+            {
+                ImGui::ShowDemoWindow();
+
+                ImGui::Begin("Inspector");
+                {
+                    DrawChildren(workspace);
+                }
+                ImGui::End();
+            }
+            rlImGuiEnd();
             DrawFPS(10, 10);
         }
         EndDrawing();
     }
 
+    rlImGuiShutdown();
     CloseWindow();
 }
