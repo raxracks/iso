@@ -7,19 +7,26 @@ class Instance {
 public:
     std::string Name;
     std::string Type;
-    std::shared_ptr<Instance> Parent;
+    Instance* Parent;
 
     Instance(std::string type);
-    Instance(std::string type, std::shared_ptr<Instance> parent);
+    Instance(std::string type, Instance* parent);
 
-    std::shared_ptr<Instance> FindFirstChild(std::string name);
-    std::vector<std::shared_ptr<Instance>> GetChildren();
+    Instance* FindFirstChild(std::string name);
+    std::vector<Instance*> GetChildren();
+    std::vector<Instance*> GetDescendants();
     bool IsA(std::string type);
 
-    std::shared_ptr<Instance> Index(std::string name);
-    void NewIndex(std::string key, std::shared_ptr<Instance> parent);
+    Instance* Index(std::string name);
+    void NewIndex(std::string key, Instance* parent);
 
-    void SetParent(std::shared_ptr<Instance> parent);
+    void SetParent(Instance* parent);
 
-    std::vector<std::shared_ptr<Instance>> children;
+    std::vector<Instance*> children;
+
+private:
+    void AddDescendants(Instance* instance, std::vector<Instance*>& descendants);
 };
+
+Instance* CreateInstance(std::string type);
+Instance* CreateInstanceWithParent(std::string type, Instance* parent);

@@ -2,6 +2,7 @@
 #include "Usertypes.hpp"
 #include "rlImGui/rlImGui.h"
 #include <imgui.h>
+#include <imgui_stdlib.h>
 #include <iostream>
 #include <ranges>
 #include <raylib.h>
@@ -11,22 +12,23 @@
 
 static ImGuiTreeNodeFlags base_flags = ImGuiTreeNodeFlags_OpenOnArrow | ImGuiTreeNodeFlags_OpenOnDoubleClick | ImGuiTreeNodeFlags_SpanAvailWidth;
 static int selection_mask = (1 << 2);
-int node_clicked = -1;
+Instance* selected;
+int i = 0;
 
-void DrawChildren(std::shared_ptr<Instance> p)
+void DrawChildren(Instance* p)
 {
-    for (int i = 0; i < p->children.size(); i++) {
+    for (Instance* child : p->children) {
         ImGuiTreeNodeFlags node_flags = base_flags;
-        const bool is_selected = node_clicked == i;
+        const bool is_selected = selected == child;
         if (is_selected)
             node_flags |= ImGuiTreeNodeFlags_Selected;
 
-        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)i, node_flags, p->children.at(i)->Name.c_str());
+        bool node_open = ImGui::TreeNodeEx((void*)(intptr_t)(i++), node_flags, child->Name.c_str());
         if (ImGui::IsItemClicked())
-            node_clicked = i;
+            selected = child;
         if (node_open) {
-            if (p->children.at(i)->children.size() > 0)
-                DrawChildren(p->children.at(i));
+            if (child->children.size() > 0)
+                DrawChildren(child);
             ImGui::TreePop();
         }
     }
@@ -56,38 +58,37 @@ int main()
     Usertypes usertypes(lua);
     usertypes.RegisterUsertypes();
 
-    std::shared_ptr<Instance> game = std::make_shared<Instance>("game");
-    std::shared_ptr<Instance> workspace = std::make_shared<Instance>("Workspace");
+    Instance* game = new Instance("game");
+    Instance* workspace = new Instance("Workspace");
     workspace->SetParent(game);
 
-    for (int i = 0; i < 100; i++) {
-        std::shared_ptr<Instance> part = std::make_shared<Instance>("Part");
-        part->Name = std::to_string(i);
-        std::shared_ptr<Instance> a = std::make_shared<Instance>("a");
-        std::make_shared<Instance>("b", a);
-        a->SetParent(part);
-        part->SetParent(workspace);
-    }
-
-    /*lua.open_libraries(sol::lib::base);
+    lua.open_libraries(sol::lib::base);
     lua.set("game", game);
     lua.set("workspace", workspace);
     lua.safe_script(R"(
 for i = 0, 100 do
-    local part = Instance.new("Part")
+    local part = Instance.new("Part", workspace)
     part.Name = tostring(i)
-    part.Parent = workspace
 
-    Instance.new("Part", part)
+    local child = Instance.new("Part", part)
+    child.Name = "child of " .. tostring(i)
+
+    local childchild = Instance.new("Part", child)
+    childchild.Name = "child of child of " .. tostring(i)
 end
-)");*/
+)");
 
     ImGuiIO& io = ImGui::GetIO();
     io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
+    RenderTexture viewport = LoadRenderTexture(600, 400);
+    ImVec2 lastSize(600, 400);
+
     SetTargetFPS(60);
     while (!WindowShouldClose()) {
-        BeginDrawing();
+        i = 0;
+
+        BeginTextureMode(viewport);
         {
             ClearBackground(WHITE);
             BeginMode3D(camera);
@@ -95,16 +96,46 @@ end
                 DrawGrid(100, 1);
             }
             EndMode3D();
+        }
+        EndTextureMode();
+
+        BeginDrawing();
+        {
+            ClearBackground(BLACK);
 
             rlImGuiBegin();
             {
-                ImGui::ShowDemoWindow();
+                ImGui::DockSpaceOverViewport();
+
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+                ImGui::Begin("Viewport");
+                {
+                    ImVec2 size = ImGui::GetContentRegionAvail();
+                    if ((size.x != lastSize.x || size.y != lastSize.y) && !ImGui::IsMouseDragging(MouseButton::MOUSE_BUTTON_LEFT)) {
+                        lastSize = size;
+                        UnloadRenderTexture(viewport);
+                        viewport = LoadRenderTexture(size.x, size.y);
+                    }
+
+                    rlImGuiImageRenderTexture(&viewport);
+                }
+                ImGui::End();
+                ImGui::PopStyleVar();
 
                 ImGui::Begin("Inspector");
                 {
                     DrawChildren(workspace);
                 }
                 ImGui::End();
+
+                if (selected != nullptr) {
+                    ImGui::Begin(("Properties - " + selected->Type).c_str());
+                    {
+                        ImGui::Text("Name");
+                        ImGui::InputText("##name", &selected->Name);
+                    }
+                    ImGui::End();
+                }
             }
             rlImGuiEnd();
             DrawFPS(10, 10);

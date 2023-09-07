@@ -6,14 +6,14 @@ Instance::Instance(std::string type)
     Name = type;
 }
 
-Instance::Instance(std::string type, std::shared_ptr<Instance> parent)
+Instance::Instance(std::string type, Instance* parent)
 {
     Type = type;
     Name = type;
     SetParent(parent);
 }
 
-std::shared_ptr<Instance> Instance::FindFirstChild(std::string name)
+Instance* Instance::FindFirstChild(std::string name)
 {
     auto it = std::ranges::find_if(children, [&](auto& child) {
         return child->Name == name;
@@ -25,15 +25,23 @@ std::shared_ptr<Instance> Instance::FindFirstChild(std::string name)
         return nullptr;
 }
 
-std::vector<std::shared_ptr<Instance>> Instance::GetChildren()
+std::vector<Instance*> Instance::GetChildren()
 {
     return children;
 }
 
-void Instance::SetParent(std::shared_ptr<Instance> parent)
+std::vector<Instance*> Instance::GetDescendants()
+{
+    std::vector<Instance*> descendants;
+    AddDescendants(this, descendants);
+
+    return descendants;
+}
+
+void Instance::SetParent(Instance* parent)
 {
     Parent = parent;
-    Parent->children.push_back(std::make_unique<Instance>(*this));
+    Parent->children.push_back(this);
 }
 
 bool Instance::IsA(std::string type)
@@ -41,7 +49,7 @@ bool Instance::IsA(std::string type)
     return Type == type;
 }
 
-std::shared_ptr<Instance> Instance::Index(std::string name)
+Instance* Instance::Index(std::string name)
 {
     if (name == "Parent")
         return Parent;
@@ -49,8 +57,27 @@ std::shared_ptr<Instance> Instance::Index(std::string name)
     return FindFirstChild(name);
 }
 
-void Instance::NewIndex(std::string key, std::shared_ptr<Instance> parent)
+void Instance::NewIndex(std::string key, Instance* parent)
 {
     if (key == "Parent")
         SetParent(parent);
+}
+
+void Instance::AddDescendants(Instance* instance, std::vector<Instance*>& descendants)
+{
+    for (auto child : instance->children) {
+        descendants.push_back(child);
+        if (child->children.size() > 0)
+            AddDescendants(child, descendants);
+    }
+}
+
+Instance* CreateInstance(std::string type)
+{
+    return new Instance(type);
+}
+
+Instance* CreateInstanceWithParent(std::string type, Instance* parent)
+{
+    return new Instance(type, parent);
 }

@@ -5,14 +5,19 @@ void Usertypes::RegisterUsertypes()
 {
     m_State.new_usertype<Instance>(
         "Instance",
-        sol::constructors<Instance(std::string), Instance(std::string, std::shared_ptr<Instance> parent)>(),
+        sol::no_constructor,
+
+        "new",
+        sol::overload(CreateInstance, CreateInstanceWithParent),
 
         "Name",
         &Instance::Name,
         "FindFirstChild",
         &Instance::FindFirstChild,
-        /*"GetChildren",
-        &Instance::GetChildren,*/
+        "GetChildren",
+        &Instance::GetChildren,
+        "GetDescendants",
+        &Instance::GetDescendants,
         "IsA",
         &Instance::IsA,
 
