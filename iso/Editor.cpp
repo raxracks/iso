@@ -2,6 +2,13 @@
 #include "rlImGui/rlImGui.h"
 #include <imgui_stdlib.h>
 
+void Editor::Update()
+{
+    if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_M)) {
+        m_ShowMetrics = true;
+    }
+}
+
 void Editor::DrawUI()
 {
     ImGui::DockSpaceOverViewport();
@@ -9,19 +16,17 @@ void Editor::DrawUI()
     ShowInspector();
     ShowViewport();
     ShowMetrics();
-    ImGui::Begin("test");
-    {
-        if (ImGui::Button("play")) {
-            m_Game.Run();
-        }
-    }
-    ImGui::End();
+    ShowProperties();
+    ShowPlayMenu();
 }
 
 void Editor::ShowInspector()
 {
     ImGui::Begin("Inspector");
     {
+        if (ImGui::Button("+")) {
+            Instance* instance = new Instance("Part", m_SelectedChild);
+        }
         DrawChildren(m_Game.game);
     }
     ImGui::End();
@@ -60,12 +65,14 @@ void Editor::ShowMetrics()
 void Editor::ShowProperties()
 {
     if (m_SelectedChild != nullptr) {
-        ImGui::Begin(("Properties - " + m_SelectedChild->Type + "\"" + m_SelectedChild->Name + "\"").c_str());
+        ImGui::Begin(("Properties - " + m_SelectedChild->Type + " \"" + m_SelectedChild->Name + "\"###properties").c_str());
         {
             ImGui::Text("Name");
             ImGui::InputText("##name", &m_SelectedChild->Name);
+            ImGui::Text("Type");
+            ImGui::InputText("##type", &m_SelectedChild->Type);
 
-            if (m_SelectedChild->Type == "Part") {
+            if (m_SelectedChild->IsA("Part")) {
                 ImGui::Text("Position");
                 ImGui::DragFloat3("##position", &m_SelectedChild->Position.X);
                 ImGui::Text("Size");
@@ -73,9 +80,39 @@ void Editor::ShowProperties()
                 ImGui::Text("Color");
                 ImGui::ColorEdit4("##color", &m_SelectedChild->Color.R);
             }
+
+            if (m_SelectedChild->IsA("Script")) {
+                ImGui::Begin("Edit");
+                {
+                    m_TextEditor.Render("##code");
+                    auto code = m_TextEditor.GetText();
+                    if (code.back() == '\n')
+                        code.pop_back();
+
+                    m_SelectedChild->Code = code;
+                }
+                ImGui::End();
+            }
         }
         ImGui::End();
     }
+}
+
+void Editor::ShowPlayMenu()
+{
+    ImGui::Begin("Play");
+    {
+        if (!m_Game.running) {
+            if (ImGui::Button("Run")) {
+                m_Game.Run();
+            }
+        } else {
+            if (ImGui::Button("Stop")) {
+                m_Game.Stop();
+            }
+        }
+    }
+    ImGui::End();
 }
 
 void Editor::DrawChildren(Instance* i)
@@ -87,9 +124,13 @@ void Editor::DrawChildren(Instance* i)
         if (m_SelectedChild == child)
             flags |= ImGuiTreeNodeFlags_Selected;
 
-        if (ImGui::IsItemClicked())
+        bool isOpen = ImGui::TreeNodeEx(child, flags, child->Name.c_str());
+        if (ImGui::IsItemClicked()) {
             m_SelectedChild = child;
-        if (ImGui::TreeNodeEx(child, flags, child->Name.c_str())) {
+            if (m_SelectedChild->IsA("Script"))
+                m_TextEditor.SetText(m_SelectedChild->Code);
+        }
+        if (isOpen) {
             if (child->children.size() > 0)
                 DrawChildren(child);
             ImGui::TreePop();

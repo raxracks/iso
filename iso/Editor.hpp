@@ -1,5 +1,6 @@
 #pragma once
 #include "Game.hpp"
+#include "ImGuiColorTextEdit/TextEditor.h"
 #include "Instance.hpp"
 #include <imgui.h>
 #include <raylib.h>
@@ -15,7 +16,10 @@ public:
     {
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
     };
+
+    void Update();
     void DrawUI();
 
 private:
@@ -23,12 +27,14 @@ private:
     Instance* m_SelectedChild;
     RenderTexture& m_RenderTexture;
     ImVec2 m_LastSize;
+    TextEditor m_TextEditor;
     bool m_ShowMetrics;
 
     void ShowInspector();
     void ShowViewport();
     void ShowMetrics();
     void ShowProperties();
+    void ShowPlayMenu();
 
     void DrawChildren(Instance* i);
 };

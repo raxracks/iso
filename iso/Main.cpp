@@ -2,20 +2,17 @@
 #include "Game.hpp"
 #include "Instance.hpp"
 #include "Script.hpp"
-#include "Usertypes.hpp"
 #include "rlImGui/rlImGui.h"
 #include <imgui.h>
-#include <iostream>
-#include <ranges>
 #include <raylib.h>
-#include <raymath.h>
-#include <sol/sol.hpp>
 #include <vector>
 
 int main()
 {
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 600, "iso");
+    /*SetTargetFPS(144);*/
+    MaximizeWindow();
     SetExitKey(KEY_NULL);
     rlImGuiSetup(true);
 
@@ -31,49 +28,66 @@ int main()
     camera.projection = CAMERA_PERSPECTIVE;
 
     Game game;
-    Instance* script = new Instance("Script", game.workspace);
-    script->code = R"(
-for i = 0, 10000 do
-    local part = Instance.new("Part", workspace)
-    part.Name = tostring(i)
-    part.Position = Vector3.new(math.random(-100, 100),
-            math.random(0, 10),
-            math.random(-100, 100))
-    part.Size = Vector3.new(math.random(1, 5), math.random(1, 5), math.random(1, 5))
+    for (int i = 0; i < 10; i++) {
+        Instance* part = new Instance("Part", game.workspace);
+        Instance* script = new Instance("Script", part);
+        script->Code = R"(local part = script.Parent
+part.Size = Vector3.new(math.random(1, 10), math.random(1, 10), math.random(1, 10))
+part.Position = Vector3.new(math.random(-10, 10), math.random(-10, 10), math.random(-10, 10))
+
+while wait() do
     part.Color = Color3.new(math.random(), math.random(), math.random())
-end)";
+end
+)";
+    }
 
     RenderTexture viewport = LoadRenderTexture(600, 400);
     Editor editor(game, viewport);
 
+    bool editing = true;
+
     while (!WindowShouldClose()) {
-        BeginTextureMode(viewport);
+        if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_E)) {
+            editing = !editing;
+        }
+
+        if (editing)
+            editor.Update();
+
+        if (editing)
+            BeginTextureMode(viewport);
+        else
+            BeginDrawing();
         {
             ClearBackground(WHITE);
             BeginMode3D(camera);
             {
                 DrawGrid(100, 1);
-                for (Instance* child : game.workspace->children) {
-                    if (child->Type == "Part") {
-                        DrawCube(child->Position, child->Size.X, child->Size.Y, child->Size.Z, child->Color);
-                    }
+                for (Instance* child : game.workspace->GetDescendantsFilter("Part")) {
+                    DrawCube(child->Position, child->Size.X, child->Size.Y, child->Size.Z, child->Color);
                 }
             }
             EndMode3D();
         }
-        EndTextureMode();
 
-        BeginDrawing();
-        {
-            ClearBackground(BLACK);
+        if (editing)
+            EndTextureMode();
+        else
+            EndDrawing();
 
-            rlImGuiBegin();
+        if (editing) {
+            BeginDrawing();
             {
-                editor.DrawUI();
+                ClearBackground(BLACK);
+
+                rlImGuiBegin();
+                {
+                    editor.DrawUI();
+                }
+                rlImGuiEnd();
             }
-            rlImGuiEnd();
+            EndDrawing();
         }
-        EndDrawing();
     }
 
     rlImGuiShutdown();

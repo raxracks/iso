@@ -20,6 +20,7 @@ public:
     Instance* FindFirstChild(std::string name);
     std::vector<Instance*> GetChildren();
     std::vector<Instance*> GetDescendants();
+    std::vector<Instance*> GetDescendantsFilter(std::string filter);
     bool IsA(std::string type);
 
     Instance* Index(std::string name);
@@ -27,16 +28,19 @@ public:
 
     void SetParent(Instance* parent);
 
+    // Part
     Vec3 Position;
     Vec3 Size;
     Color3 Color;
 
-    std::string code;
+    // Script
+    std::string Code;
 
     std::vector<Instance*> children;
 
 private:
     void AddDescendants(Instance* instance, std::vector<Instance*>& descendants);
+    void AddDescendantsFilter(Instance* instance, std::vector<Instance*>& descendants, std::string filter);
 };
 
 Instance* CreateInstance(std::string type);

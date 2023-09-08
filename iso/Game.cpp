@@ -8,9 +8,21 @@ Game::Game()
 
 void Game::Run()
 {
-    for (Instance* child : workspace->children) {
+    for (Instance* child : workspace->GetDescendants()) {
         if (child->IsA("Script")) {
-            Script(game, workspace, child->code);
+            Script* script = new Script(game, workspace, child, child->Code);
+            m_Scripts.push_back(script);
         }
     }
+
+    running = true;
+}
+
+void Game::Stop()
+{
+    for (Script* s : m_Scripts) {
+        s->~Script();
+    }
+
+    running = false;
 }

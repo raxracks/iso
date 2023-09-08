@@ -1,13 +1,15 @@
 #pragma once
 #include "Instance.hpp"
 #include <sol/sol.hpp>
+#include <thread>
 
 class Instance;
 
 class Script {
 public:
-    Script(Instance* game, Instance* workspace, std::string code);
+    Script(Instance* game, Instance* workspace, Instance* script, std::string code);
+    ~Script();
 
 private:
-    sol::state m_State;
+    std::thread m_Thread;
 };

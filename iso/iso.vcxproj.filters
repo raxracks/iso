@@ -19,6 +19,12 @@
     <Filter Include="Source Files\rlImGui">
       <UniqueIdentifier>{a8ee93d7-2f90-4b81-91e4-ebdbd61a74a4}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\ImGuiColorTextEdit">
+      <UniqueIdentifier>{8a201ab4-7bc3-4cfe-aa80-4618bab2201a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ImGuiColorTextEdit">
+      <UniqueIdentifier>{dda6ce58-f068-4536-9a97-b2b22629d35f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -48,6 +54,9 @@
     <ClCompile Include="Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="ImGuiColorTextEdit\TextEditor.cpp">
+      <Filter>Source Files\ImGuiColorTextEdit</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Instance.hpp">
@@ -76,6 +85,9 @@
     </ClInclude>
     <ClInclude Include="Game.hpp">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ImGuiColorTextEdit\TextEditor.h">
+      <Filter>Header Files\ImGuiColorTextEdit</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

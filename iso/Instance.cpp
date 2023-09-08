@@ -38,6 +38,14 @@ std::vector<Instance*> Instance::GetDescendants()
     return descendants;
 }
 
+std::vector<Instance*> Instance::GetDescendantsFilter(std::string filter)
+{
+    std::vector<Instance*> descendants;
+    AddDescendantsFilter(this, descendants, filter);
+
+    return descendants;
+}
+
 void Instance::SetParent(Instance* parent)
 {
     Parent = parent;
@@ -65,10 +73,20 @@ void Instance::NewIndex(std::string key, Instance* parent)
 
 void Instance::AddDescendants(Instance* instance, std::vector<Instance*>& descendants)
 {
-    for (auto child : instance->children) {
+    for (Instance* child : instance->children) {
         descendants.push_back(child);
         if (child->children.size() > 0)
             AddDescendants(child, descendants);
+    }
+}
+
+void Instance::AddDescendantsFilter(Instance* instance, std::vector<Instance*>& descendants, std::string filter)
+{
+    for (Instance* child : instance->children) {
+        if (child->IsA(filter))
+            descendants.push_back(child);
+        if (child->children.size() > 0)
+            AddDescendantsFilter(child, descendants, filter);
     }
 }
 
