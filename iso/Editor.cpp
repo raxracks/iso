@@ -1,6 +1,31 @@
 #include "Editor.hpp"
+#include "rlImGui/extras/FA6FreeSolidFontData.h"
 #include "rlImGui/rlImGui.h"
 #include <imgui_stdlib.h>
+#include <raylib.h>
+
+Editor::Editor(Game& game, RenderTexture& renderTexture)
+    : m_Game(game)
+    , m_RenderTexture(renderTexture)
+    , m_SelectedChild(nullptr)
+    , m_LastSize(0, 0)
+    , m_ShowMetrics(false)
+{
+    ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+    static const ImWchar icons_ranges[] = { ICON_MIN_FA, ICON_MAX_FA, 0 };
+    ImFontConfig icons_config;
+    icons_config.MergeMode = true;
+    icons_config.PixelSnapH = true;
+    icons_config.FontDataOwnedByAtlas = false;
+    icons_config.GlyphRanges = icons_ranges;
+    m_FiraFont = io.Fonts->AddFontFromFileTTF("assets/FiraCode/FiraCode-Regular.ttf", 20.0f);
+    m_MainFont = io.Fonts->AddFontFromFileTTF("assets/Roboto/Roboto-Regular.ttf", 18.0f);
+    io.Fonts->AddFontFromMemoryCompressedTTF((void*)fa_solid_900_compressed_data, fa_solid_900_compressed_size, FONT_AWESOME_ICON_SIZE, &icons_config, icons_ranges);
+    rlImGuiReloadFonts();
+
+    m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
+}
 
 void Editor::Update()
 {
@@ -11,13 +36,17 @@ void Editor::Update()
 
 void Editor::DrawUI()
 {
+    ImGui::PushFont(m_MainFont);
     ImGui::DockSpaceOverViewport();
 
-    ShowInspector();
+    ImGui::ShowDemoWindow();
+
     ShowViewport();
     ShowMetrics();
     ShowProperties();
     ShowPlayMenu();
+    ShowInspector();
+    ImGui::PopFont();
 }
 
 void Editor::ShowInspector()
@@ -50,13 +79,20 @@ void Editor::ShowViewport()
     ImGui::PopStyleVar();
 }
 
+std::vector<float> frameTimes;
+
 void Editor::ShowMetrics()
 {
     if (m_ShowMetrics) {
-        ImGui::Begin("Metrics", &m_ShowMetrics);
+        ImGui::Begin("Metrics", &m_ShowMetrics, ImGuiWindowFlags_AlwaysAutoResize);
         {
             ImGui::Text("FPS: %d", GetFPS());
-            ImGui::Text("Frame time: %f", GetFrameTime());
+            ImGui::Text("Frame time: %fms", GetFrameTime());
+            frameTimes.push_back(GetFrameTime());
+            if (frameTimes.size() > 100)
+                frameTimes.erase(frameTimes.begin());
+
+            ImGui::PlotLines("##frametimes", &frameTimes[0], (int)frameTimes.size(), 0, 0, 0.0f, 0.5f, ImVec2(200, 50));
         }
         ImGui::End();
     }
@@ -82,16 +118,16 @@ void Editor::ShowProperties()
             }
 
             if (m_SelectedChild->IsA("Script")) {
+                ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
                 ImGui::Begin("Edit");
                 {
+                    ImGui::PushFont(m_FiraFont);
                     m_TextEditor.Render("##code");
-                    auto code = m_TextEditor.GetText();
-                    if (code.back() == '\n')
-                        code.pop_back();
-
-                    m_SelectedChild->Code = code;
+                    m_SelectedChild->Code = m_TextEditor.GetText();
+                    ImGui::PopFont();
                 }
                 ImGui::End();
+                ImGui::PopStyleVar();
             }
         }
         ImGui::End();
@@ -103,11 +139,11 @@ void Editor::ShowPlayMenu()
     ImGui::Begin("Play");
     {
         if (!m_Game.running) {
-            if (ImGui::Button("Run")) {
+            if (ImGui::Button(ICON_FA_PLAY)) {
                 m_Game.Run();
             }
         } else {
-            if (ImGui::Button("Stop")) {
+            if (ImGui::Button(ICON_FA_STOP)) {
                 m_Game.Stop();
             }
         }

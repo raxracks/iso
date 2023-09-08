@@ -9,11 +9,12 @@
 
 int main()
 {
+    SetExitKey(KEY_NULL);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 600, "iso");
-    /*SetTargetFPS(144);*/
+    SetTargetFPS(60);
     MaximizeWindow();
-    SetExitKey(KEY_NULL);
+
     rlImGuiSetup(true);
 
     Camera3D camera {};
@@ -28,10 +29,9 @@ int main()
     camera.projection = CAMERA_PERSPECTIVE;
 
     Game game;
-    for (int i = 0; i < 10; i++) {
-        Instance* part = new Instance("Part", game.workspace);
-        Instance* script = new Instance("Script", part);
-        script->Code = R"(local part = script.Parent
+    Instance* part = new Instance("Part", game.workspace);
+    Instance* script = new Instance("Script", part);
+    script->Code = R"(local part = script.Parent
 part.Size = Vector3.new(math.random(1, 10), math.random(1, 10), math.random(1, 10))
 part.Position = Vector3.new(math.random(-10, 10), math.random(-10, 10), math.random(-10, 10))
 
@@ -39,7 +39,6 @@ while wait() do
     part.Color = Color3.new(math.random(), math.random(), math.random())
 end
 )";
-    }
 
     RenderTexture viewport = LoadRenderTexture(600, 400);
     Editor editor(game, viewport);
@@ -51,12 +50,10 @@ end
             editing = !editing;
         }
 
-        if (editing)
+        if (editing) {
             editor.Update();
-
-        if (editing)
             BeginTextureMode(viewport);
-        else
+        } else
             BeginDrawing();
         {
             ClearBackground(WHITE);

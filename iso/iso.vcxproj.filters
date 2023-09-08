@@ -25,6 +25,15 @@
     <Filter Include="Source Files\ImGuiColorTextEdit">
       <UniqueIdentifier>{dda6ce58-f068-4536-9a97-b2b22629d35f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\assets">
+      <UniqueIdentifier>{e106f9cf-de52-4695-baec-1d0876c56c9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\assets\FiraCode">
+      <UniqueIdentifier>{acfeb303-b7ca-4487-af65-3b3bf0b31193}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\assets\Roboto">
+      <UniqueIdentifier>{44846d98-5930-4001-b69e-ee9311a0cbe1}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Main.cpp">
@@ -55,6 +64,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="ImGuiColorTextEdit\TextEditor.cpp">
+      <Filter>Source Files\ImGuiColorTextEdit</Filter>
+    </ClCompile>
+    <ClCompile Include="ImGuiColorTextEdit\LanguageDefinitions.cpp">
       <Filter>Source Files\ImGuiColorTextEdit</Filter>
     </ClCompile>
   </ItemGroup>
@@ -94,5 +106,21 @@
     <None Include="imgui.ini">
       <Filter>Resource Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="assets\FiraCode\FiraCode-Regular.ttf">
+      <Filter>Resource Files\assets\FiraCode</Filter>
+    </Font>
+    <Font Include="assets\Roboto\Roboto-Regular.ttf">
+      <Filter>Resource Files\assets\Roboto</Filter>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="assets\FiraCode\LICENSE.txt">
+      <Filter>Resource Files\assets\FiraCode</Filter>
+    </Text>
+    <Text Include="assets\Roboto\LICENSE.txt">
+      <Filter>Resource Files\assets\Roboto</Filter>
+    </Text>
   </ItemGroup>
 </Project>

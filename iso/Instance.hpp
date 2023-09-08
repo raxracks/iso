@@ -21,6 +21,8 @@ public:
     std::vector<Instance*> GetChildren();
     std::vector<Instance*> GetDescendants();
     std::vector<Instance*> GetDescendantsFilter(std::string filter);
+    Instance* Clone();
+    void Destroy();
     bool IsA(std::string type);
 
     Instance* Index(std::string name);

@@ -20,6 +20,10 @@ void Usertypes::RegisterUsertypes()
         &Instance::GetChildren,
         "GetDescendants",
         &Instance::GetDescendants,
+        "Clone",
+        &Instance::Clone,
+        "Destroy",
+        &Instance::Destroy,
         "IsA",
         &Instance::IsA,
 

@@ -6,6 +6,21 @@ Instance::Instance(std::string type)
     Name = type;
 }
 
+Instance::~Instance()
+{
+    if (Parent != nullptr) {
+        std::erase_if(Parent->children, [&](Instance* child) {
+            return child == this;
+        });
+    }
+
+    for (Instance* child : children) {
+        child->~Instance();
+    }
+
+    delete this;
+}
+
 Instance::Instance(std::string type, Instance* parent)
 {
     Type = type;
@@ -48,8 +63,18 @@ std::vector<Instance*> Instance::GetDescendantsFilter(std::string filter)
 
 void Instance::SetParent(Instance* parent)
 {
+    if (Parent != nullptr) {
+        std::erase_if(Parent->children, [&](Instance* child) {
+            return child == this;
+        });
+    }
     Parent = parent;
     Parent->children.push_back(this);
+}
+
+Instance* Instance::Clone()
+{
+    return new Instance(*this);
 }
 
 bool Instance::IsA(std::string type)

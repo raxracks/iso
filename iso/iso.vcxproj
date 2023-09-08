@@ -146,6 +146,7 @@
     <ClCompile Include="Color3.cpp" />
     <ClCompile Include="Editor.cpp" />
     <ClCompile Include="Game.cpp" />
+    <ClCompile Include="ImGuiColorTextEdit\LanguageDefinitions.cpp" />
     <ClCompile Include="ImGuiColorTextEdit\TextEditor.cpp" />
     <ClCompile Include="Instance.cpp" />
     <ClCompile Include="Main.cpp" />
@@ -170,6 +171,22 @@
     <None Include="imgui.ini">
       <DeploymentContent>true</DeploymentContent>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="assets\FiraCode\FiraCode-Regular.ttf">
+      <DeploymentContent>true</DeploymentContent>
+    </Font>
+    <Font Include="assets\Roboto\Roboto-Regular.ttf">
+      <DeploymentContent>true</DeploymentContent>
+    </Font>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="assets\FiraCode\LICENSE.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </Text>
+    <Text Include="assets\Roboto\LICENSE.txt">
+      <DeploymentContent>true</DeploymentContent>
+    </Text>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

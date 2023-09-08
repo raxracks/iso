@@ -3,21 +3,10 @@
 #include "ImGuiColorTextEdit/TextEditor.h"
 #include "Instance.hpp"
 #include <imgui.h>
-#include <raylib.h>
 
 class Editor {
 public:
-    Editor(Game& game, RenderTexture& renderTexture)
-        : m_Game(game)
-        , m_RenderTexture(renderTexture)
-        , m_SelectedChild(nullptr)
-        , m_LastSize(0, 0)
-        , m_ShowMetrics(false)
-    {
-        ImGuiIO& io = ImGui::GetIO();
-        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        m_TextEditor.SetLanguageDefinition(TextEditor::LanguageDefinition::Lua());
-    };
+    Editor(Game& game, RenderTexture& renderTexture);
 
     void Update();
     void DrawUI();
@@ -28,6 +17,8 @@ private:
     RenderTexture& m_RenderTexture;
     ImVec2 m_LastSize;
     TextEditor m_TextEditor;
+    ImFont* m_MainFont;
+    ImFont* m_FiraFont;
     bool m_ShowMetrics;
 
     void ShowInspector();
