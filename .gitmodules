@@ -1,3 +1,6 @@
 [submodule "iso/rlImGui"]
 	path = iso/rlImGui
 	url = https://github.com/raylib-extras/rlImGui
+[submodule "iso/ImGuiColorTextEdit"]
+	path = iso/ImGuiColorTextEdit
+	url = https://github.com/BalazsJako/ImGuiColorTextEdit
