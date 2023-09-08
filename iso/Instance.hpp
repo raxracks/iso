@@ -1,7 +1,12 @@
 #pragma once
+#include "Color3.hpp"
+#include "Script.hpp"
+#include "Vec3.hpp"
 #include <sol/sol.hpp>
 #include <string>
 #include <vector>
+
+class Script;
 
 class Instance {
 public:
@@ -21,6 +26,12 @@ public:
     void NewIndex(std::string key, Instance* parent);
 
     void SetParent(Instance* parent);
+
+    Vec3 Position;
+    Vec3 Size;
+    Color3 Color;
+
+    std::string code;
 
     std::vector<Instance*> children;
 
