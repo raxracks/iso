@@ -1,5 +1,6 @@
 #pragma once
 #include "Instance.hpp"
+#include "Script.hpp"
 
 class Game {
 public:
@@ -10,6 +11,7 @@ public:
 
     Instance* game;
     Instance* workspace;
+    Instance* camera;
     bool running = false;
 
 private:

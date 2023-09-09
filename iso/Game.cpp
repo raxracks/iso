@@ -4,13 +4,16 @@ Game::Game()
 {
     game = new Instance("game");
     workspace = new Instance("Workspace", game);
+    camera = new Instance("Camera", game);
 }
 
 void Game::Run()
 {
-    for (Instance* child : workspace->GetDescendantsFilter("Script")) {
-        Script* script = new Script(game, workspace, child, child->Code);
-        m_Scripts.push_back(script);
+    for (Instance* child : workspace->GetDescendants()) {
+        if (child->IsA("Script")) {
+            Script* script = new Script(game, workspace, child, child->Code);
+            m_Scripts.push_back(script);
+        }
     }
 
     running = true;

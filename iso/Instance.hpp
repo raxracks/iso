@@ -1,49 +1,42 @@
 #pragma once
+#include "Cam.hpp"
 #include "Color3.hpp"
-#include "Script.hpp"
 #include "Vec3.hpp"
-#include <sol/sol.hpp>
 #include <string>
 #include <vector>
 
-class Script;
-
 class Instance {
 public:
-    std::string Name;
-    std::string Type;
-    Instance* Parent;
-
     Instance(std::string type);
     Instance(std::string type, Instance* parent);
 
-    Instance* FindFirstChild(std::string name);
+    void SetParent(Instance* parent);
     std::vector<Instance*> GetChildren();
     std::vector<Instance*> GetDescendants();
-    std::vector<Instance*> GetDescendantsFilter(std::string filter);
-    Instance* Clone();
+    Instance* FindFirstChild(std::string name);
     void Destroy();
     bool IsA(std::string type);
+
+    Instance* Parent;
+
+    std::string Type;
+    std::string Name;
+    Vec3 Position;
+    Vec3 Size;
+    Color3 Color;
+    Cam Camera;
+    float Distance;
+    std::string Code;
+
+    bool destroyed = false;
 
     Instance* Index(std::string name);
     void NewIndex(std::string key, Instance* parent);
 
-    void SetParent(Instance* parent);
-
-    // Part
-    Vec3 Position;
-    Vec3 Size;
-    Color3 Color;
-
-    // Script
-    std::string Code;
-
-    std::vector<Instance*> children;
+    Instance* child;
+    Instance* next;
+    Instance* prev;
 
 private:
-    void AddDescendants(Instance* instance, std::vector<Instance*>& descendants);
-    void AddDescendantsFilter(Instance* instance, std::vector<Instance*>& descendants, std::string filter);
+    void AddDescendants(Instance* root, std::vector<Instance*>& descendants);
 };
-
-Instance* CreateInstance(std::string type);
-Instance* CreateInstanceWithParent(std::string type, Instance* parent);

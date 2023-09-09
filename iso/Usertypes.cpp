@@ -10,7 +10,13 @@ void Usertypes::RegisterUsertypes()
         sol::no_constructor,
 
         "new",
-        sol::overload(CreateInstance, CreateInstanceWithParent),
+        sol::overload(
+            [](std::string type) {
+                return new Instance(type);
+            },
+            [](std::string type, Instance* parent) {
+                return new Instance(type, parent);
+            }),
 
         "Name",
         &Instance::Name,
@@ -20,8 +26,8 @@ void Usertypes::RegisterUsertypes()
         &Instance::GetChildren,
         "GetDescendants",
         &Instance::GetDescendants,
-        "Clone",
-        &Instance::Clone,
+        /*"Clone",
+        &Instance::Clone,*/
         "Destroy",
         &Instance::Destroy,
         "IsA",
@@ -33,6 +39,8 @@ void Usertypes::RegisterUsertypes()
         &Instance::Size,
         "Color",
         &Instance::Color,
+        "Distance",
+        &Instance::Distance,
 
         sol::meta_function::index,
         &Instance::Index,

@@ -1,8 +1,8 @@
 #include "Editor.hpp"
 #include "rlImGui/extras/FA6FreeSolidFontData.h"
 #include "rlImGui/rlImGui.h"
+#include <boost/algorithm/string/join.hpp>
 #include <imgui_stdlib.h>
-#include <raylib.h>
 
 Editor::Editor(Game& game, RenderTexture& renderTexture)
     : m_Game(game)
@@ -56,6 +56,10 @@ void Editor::ShowInspector()
         if (ImGui::Button("+")) {
             Instance* instance = new Instance("Part", m_SelectedChild);
         }
+        ImGui::SameLine();
+        if (ImGui::Button("-")) {
+            m_SelectedChild->Destroy();
+        }
         DrawChildren(m_Game.game);
     }
     ImGui::End();
@@ -79,8 +83,6 @@ void Editor::ShowViewport()
     ImGui::PopStyleVar();
 }
 
-std::vector<float> frameTimes;
-
 void Editor::ShowMetrics()
 {
     if (m_ShowMetrics) {
@@ -88,11 +90,11 @@ void Editor::ShowMetrics()
         {
             ImGui::Text("FPS: %d", GetFPS());
             ImGui::Text("Frame time: %fms", GetFrameTime());
-            frameTimes.push_back(GetFrameTime());
-            if (frameTimes.size() > 100)
-                frameTimes.erase(frameTimes.begin());
+            m_FrameTimes.push_back(GetFrameTime());
+            if (m_FrameTimes.size() > 100)
+                m_FrameTimes.erase(m_FrameTimes.begin());
 
-            ImGui::PlotLines("##frametimes", &frameTimes[0], (int)frameTimes.size(), 0, 0, 0.0f, 0.5f, ImVec2(200, 50));
+            ImGui::PlotLines("##frametimes", &m_FrameTimes[0], (int)m_FrameTimes.size(), 0, 0, 0.0f, 0.5f, ImVec2(200, 50));
         }
         ImGui::End();
     }
@@ -100,13 +102,20 @@ void Editor::ShowMetrics()
 
 void Editor::ShowProperties()
 {
-    if (m_SelectedChild != nullptr) {
+    if (m_SelectedChild) {
         ImGui::Begin(("Properties - " + m_SelectedChild->Type + " \"" + m_SelectedChild->Name + "\"###properties").c_str());
         {
             ImGui::Text("Name");
             ImGui::InputText("##name", &m_SelectedChild->Name);
             ImGui::Text("Type");
             ImGui::InputText("##type", &m_SelectedChild->Type);
+
+            if (m_SelectedChild->IsA("Camera")) {
+                ImGui::Text("Position");
+                ImGui::DragFloat2("##position", &m_SelectedChild->Position.X);
+                ImGui::Text("Distance");
+                ImGui::DragFloat("##distance", &m_SelectedChild->Distance);
+            }
 
             if (m_SelectedChild->IsA("Part")) {
                 ImGui::Text("Position");
@@ -123,7 +132,7 @@ void Editor::ShowProperties()
                 {
                     ImGui::PushFont(m_FiraFont);
                     m_TextEditor.Render("##code");
-                    m_SelectedChild->Code = m_TextEditor.GetText();
+                    m_SelectedChild->Code = boost::join(m_TextEditor.GetTextLines(), "\n");
                     ImGui::PopFont();
                 }
                 ImGui::End();
@@ -153,23 +162,27 @@ void Editor::ShowPlayMenu()
 
 void Editor::DrawChildren(Instance* i)
 {
-    for (Instance* child : i->children) {
-        ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
-            | ImGuiTreeNodeFlags_OpenOnDoubleClick
-            | ImGuiTreeNodeFlags_SpanAvailWidth;
-        if (m_SelectedChild == child)
-            flags |= ImGuiTreeNodeFlags_Selected;
+    if (i) {
+        for (Instance* child : i->GetChildren()) {
+            if (child) {
+                ImGuiTreeNodeFlags flags = ImGuiTreeNodeFlags_OpenOnArrow
+                    | ImGuiTreeNodeFlags_OpenOnDoubleClick
+                    | ImGuiTreeNodeFlags_SpanAvailWidth;
+                if (m_SelectedChild == child)
+                    flags |= ImGuiTreeNodeFlags_Selected;
 
-        bool isOpen = ImGui::TreeNodeEx(child, flags, child->Name.c_str());
-        if (ImGui::IsItemClicked()) {
-            m_SelectedChild = child;
-            if (m_SelectedChild->IsA("Script"))
-                m_TextEditor.SetText(m_SelectedChild->Code);
-        }
-        if (isOpen) {
-            if (child->children.size() > 0)
-                DrawChildren(child);
-            ImGui::TreePop();
+                bool isOpen = ImGui::TreeNodeEx(child, flags, child->Name.c_str());
+                if (ImGui::IsItemClicked()) {
+                    m_SelectedChild = child;
+                    if (m_SelectedChild->IsA("Script"))
+                        m_TextEditor.SetText(m_SelectedChild->Code);
+                }
+                if (isOpen) {
+                    if (child->GetChildren().size() > 0)
+                        DrawChildren(child);
+                    ImGui::TreePop();
+                }
+            }
         }
     }
 }

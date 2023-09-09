@@ -1,36 +1,74 @@
 #include "Instance.hpp"
+#include <iostream>
 
 Instance::Instance(std::string type)
+    : Camera(Cam(Position, Distance))
 {
     Type = type;
     Name = type;
 }
 
-Instance::~Instance()
-{
-    if (Parent != nullptr) {
-        std::erase_if(Parent->children, [&](Instance* child) {
-            return child == this;
-        });
-    }
-
-    for (Instance* child : children) {
-        child->~Instance();
-    }
-
-    delete this;
-}
-
 Instance::Instance(std::string type, Instance* parent)
+    : Camera(Cam(Position, Distance))
 {
     Type = type;
     Name = type;
     SetParent(parent);
 }
 
+void Instance::SetParent(Instance* parent)
+{
+    if (Parent != nullptr) {
+        if (next != nullptr) {
+            next->prev = prev;
+        }
+        if (prev != nullptr) {
+            prev->next = next;
+        }
+
+        if (Parent->child == this) {
+            Parent->child = next;
+        }
+    }
+    Parent = parent;
+    Instance* current = Parent->child;
+    next = nullptr;
+    if (current == nullptr) {
+        Parent->child = this;
+        prev = nullptr;
+    } else {
+        while (current->next != nullptr) {
+            current = current->next;
+        }
+        current->next = this;
+        prev = current;
+    }
+}
+
+std::vector<Instance*> Instance::GetChildren()
+{
+    std::vector<Instance*> children;
+    Instance* current = child;
+    while (current != nullptr) {
+        children.push_back(current);
+        current = current->next;
+    }
+
+    return children;
+}
+
+std::vector<Instance*> Instance::GetDescendants()
+{
+    std::vector<Instance*> descendants;
+    AddDescendants(this, descendants);
+    return descendants;
+}
+
 Instance* Instance::FindFirstChild(std::string name)
 {
-    auto it = std::ranges::find_if(children, [&](auto& child) {
+    std::vector<Instance*> children = GetChildren();
+
+    auto it = std::ranges::find_if(children, [&](Instance* child) {
         return child->Name == name;
     });
 
@@ -40,46 +78,28 @@ Instance* Instance::FindFirstChild(std::string name)
         return nullptr;
 }
 
-std::vector<Instance*> Instance::GetChildren()
+void Instance::Destroy()
 {
-    return children;
-}
+    destroyed = true;
 
-std::vector<Instance*> Instance::GetDescendants()
-{
-    std::vector<Instance*> descendants;
-    AddDescendants(this, descendants);
-
-    return descendants;
-}
-
-std::vector<Instance*> Instance::GetDescendantsFilter(std::string filter)
-{
-    std::vector<Instance*> descendants;
-    AddDescendantsFilter(this, descendants, filter);
-
-    return descendants;
-}
-
-void Instance::SetParent(Instance* parent)
-{
-    if (Parent != nullptr) {
-        std::erase_if(Parent->children, [&](Instance* child) {
-            return child == this;
-        });
+    Instance* c = child;
+    while (c != nullptr) {
+        c->Destroy();
+        c = c->next;
     }
-    Parent = parent;
-    Parent->children.push_back(this);
-}
-
-Instance* Instance::Clone()
-{
-    return new Instance(*this);
 }
 
 bool Instance::IsA(std::string type)
 {
     return Type == type;
+}
+
+void Instance::AddDescendants(Instance* root, std::vector<Instance*>& descendants)
+{
+    for (Instance* child : root->GetChildren()) {
+        descendants.push_back(child);
+        AddDescendants(child, descendants);
+    }
 }
 
 Instance* Instance::Index(std::string name)
@@ -94,33 +114,4 @@ void Instance::NewIndex(std::string key, Instance* parent)
 {
     if (key == "Parent")
         SetParent(parent);
-}
-
-void Instance::AddDescendants(Instance* instance, std::vector<Instance*>& descendants)
-{
-    for (Instance* child : instance->children) {
-        descendants.push_back(child);
-        if (child->children.size() > 0)
-            AddDescendants(child, descendants);
-    }
-}
-
-void Instance::AddDescendantsFilter(Instance* instance, std::vector<Instance*>& descendants, std::string filter)
-{
-    for (Instance* child : instance->children) {
-        if (child->IsA(filter))
-            descendants.push_back(child);
-        if (child->children.size() > 0)
-            AddDescendantsFilter(child, descendants, filter);
-    }
-}
-
-Instance* CreateInstance(std::string type)
-{
-    return new Instance(type);
-}
-
-Instance* CreateInstanceWithParent(std::string type, Instance* parent)
-{
-    return new Instance(type, parent);
 }

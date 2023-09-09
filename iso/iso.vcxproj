@@ -156,6 +156,7 @@
     <ClCompile Include="Vec3.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Cam.hpp" />
     <ClInclude Include="Color3.hpp" />
     <ClInclude Include="Editor.hpp" />
     <ClInclude Include="Game.hpp" />

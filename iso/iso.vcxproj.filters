@@ -101,6 +101,9 @@
     <ClInclude Include="ImGuiColorTextEdit\TextEditor.h">
       <Filter>Header Files\ImGuiColorTextEdit</Filter>
     </ClInclude>
+    <ClInclude Include="Cam.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini">
