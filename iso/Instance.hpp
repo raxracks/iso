@@ -21,12 +21,15 @@ public:
 
     std::string Type;
     std::string Name;
+
     Vec3 Position;
-    Vec3 Size;
+    Vec3 Size = Vec3(1, 1, 1);
     Color3 Color;
     Cam Camera;
-    float Distance;
+    float Distance = 10.0f;
     std::string Code;
+
+    uint32_t GetProperties();
 
     Instance* Index(std::string name);
     void NewIndex(std::string key, Instance* parent);

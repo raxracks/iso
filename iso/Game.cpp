@@ -3,6 +3,7 @@
 Game::Game()
 {
     game = new Instance("game");
+    gameClone = nullptr;
     workspace = new Instance("Workspace", game);
     camera = new Instance("Camera", game);
 }

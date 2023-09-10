@@ -115,3 +115,16 @@ void Instance::NewIndex(std::string key, Instance* parent)
     if (key == "Parent")
         SetParent(parent);
 }
+
+uint32_t Instance::GetProperties()
+{
+    if (Type == "Part") {
+        return Properties::Position | Properties::Size | Properties::Color;
+    } else if (Type == "Script") {
+        return Properties::Code;
+    } else if (Type == "Camera") {
+        return Properties::Position | Properties::Distance;
+    }
+
+    return 0;
+}

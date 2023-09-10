@@ -162,6 +162,7 @@
     <ClInclude Include="Game.hpp" />
     <ClInclude Include="ImGuiColorTextEdit\TextEditor.h" />
     <ClInclude Include="Instance.hpp" />
+    <ClInclude Include="Properties.hpp" />
     <ClInclude Include="rlImGui\rlImGui.h" />
     <ClInclude Include="rlImGui\rlImGuiColors.h" />
     <ClInclude Include="Script.hpp" />

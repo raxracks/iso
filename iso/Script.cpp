@@ -13,6 +13,7 @@ Script::Script(Instance* game, Instance* workspace, Instance* script, std::strin
         state.open_libraries(sol::lib::base, sol::lib::math);
         state.set("game", game);
         state.set("workspace", workspace);
+        state.set_panic([](lua_State* L) { return -1; });
         state.set("script", script);
         state.set_function("wait",
             sol::overload(
@@ -33,7 +34,7 @@ Script::Script(Instance* game, Instance* workspace, Instance* script, std::strin
             LUA_MASKLINE, 0);
 
         try {
-            state.script(code);
+            state.safe_script(code);
         } catch (std::exception e) {
             std::cout << e.what() << std::endl;
         }

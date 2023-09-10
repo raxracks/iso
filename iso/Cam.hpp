@@ -1,4 +1,5 @@
 #pragma once
+#include "Properties.hpp"
 #include "Vec3.hpp"
 #include <raylib.h>
 

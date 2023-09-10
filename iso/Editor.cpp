@@ -38,9 +38,6 @@ void Editor::DrawUI()
 {
     ImGui::PushFont(m_MainFont);
     ImGui::DockSpaceOverViewport();
-
-    ImGui::ShowDemoWindow();
-
     ShowViewport();
     ShowMetrics();
     ShowProperties();
@@ -49,17 +46,35 @@ void Editor::DrawUI()
     ImGui::PopFont();
 }
 
+std::vector<std::string> types = { "Part", "Script" };
+
 void Editor::ShowInspector()
 {
     ImGui::Begin("Inspector");
     {
-        if (ImGui::Button("+")) {
-            Instance* instance = new Instance("Part", m_SelectedChild);
+        ImGui::BeginDisabled(m_SelectedChild == nullptr);
+        {
+            if (ImGui::Button("+")) {
+                ImGui::OpenPopup("popup_new");
+            }
+
+            if (ImGui::BeginPopup("popup_new")) {
+                for (std::string type : types) {
+                    if (ImGui::Button(type.c_str())) {
+                        Instance* instance = new Instance(type, m_SelectedChild);
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+                ImGui::EndPopup();
+            }
+
+            ImGui::SameLine();
+            if (ImGui::Button("-")) {
+                m_SelectedChild->Destroy();
+            }
         }
-        ImGui::SameLine();
-        if (ImGui::Button("-")) {
-            m_SelectedChild->Destroy();
-        }
+        ImGui::EndDisabled();
+
         DrawChildren(m_Game.game);
     }
     ImGui::End();
@@ -110,23 +125,24 @@ void Editor::ShowProperties()
             ImGui::Text("Type");
             ImGui::InputText("##type", &m_SelectedChild->Type);
 
-            if (m_SelectedChild->IsA("Camera")) {
-                ImGui::Text("Position");
-                ImGui::DragFloat2("##position", &m_SelectedChild->Position.X);
-                ImGui::Text("Distance");
-                ImGui::DragFloat("##distance", &m_SelectedChild->Distance);
-            }
-
-            if (m_SelectedChild->IsA("Part")) {
+            uint32_t props = m_SelectedChild->GetProperties();
+            if (props & Properties::Position) {
                 ImGui::Text("Position");
                 ImGui::DragFloat3("##position", &m_SelectedChild->Position.X);
+            }
+            if (props & Properties::Size) {
                 ImGui::Text("Size");
                 ImGui::DragFloat3("##size", &m_SelectedChild->Size.X);
+            }
+            if (props & Properties::Color) {
                 ImGui::Text("Color");
                 ImGui::ColorEdit4("##color", &m_SelectedChild->Color.R);
             }
-
-            if (m_SelectedChild->IsA("Script")) {
+            if (props & Properties::Distance) {
+                ImGui::Text("Distance");
+                ImGui::DragFloat("##distance", &m_SelectedChild->Distance);
+            }
+            if (props & Properties::Code) {
                 ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
                 ImGui::Begin("Edit");
                 {

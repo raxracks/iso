@@ -104,6 +104,9 @@
     <ClInclude Include="Cam.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Properties.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="imgui.ini">
