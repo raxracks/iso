@@ -39,4 +39,5 @@ public:
 
 private:
     void AddDescendants(Instance* root, std::vector<Instance*>& descendants);
+    Instance* m_Game;
 };

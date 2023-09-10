@@ -20,6 +20,8 @@ int main()
     RenderTexture viewport = LoadRenderTexture(600, 400);
     Editor editor(game, viewport);
 
+    std::cout << game.camera << std::endl;
+
     bool editing = true;
 
     while (!WindowShouldClose()) {

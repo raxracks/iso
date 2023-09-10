@@ -10,6 +10,7 @@ public:
     void Stop();
 
     Instance* game;
+    Instance* gameClone;
     Instance* workspace;
     Instance* camera;
     bool running = false;
