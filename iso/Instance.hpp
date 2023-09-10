@@ -28,14 +28,13 @@ public:
     float Distance;
     std::string Code;
 
-    bool destroyed = false;
-
     Instance* Index(std::string name);
     void NewIndex(std::string key, Instance* parent);
 
     Instance* child;
     Instance* next;
     Instance* prev;
+    bool destroyed = false;
 
 private:
     void AddDescendants(Instance* root, std::vector<Instance*>& descendants);
