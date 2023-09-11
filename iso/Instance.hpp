@@ -7,21 +7,26 @@
 
 class Instance {
 public:
-    Instance(std::string type);
-    Instance(std::string type, Instance* parent);
+    Instance(const std::string className);
+    Instance(const std::string className, Instance* parent);
 
+    // Public methods
     void SetParent(Instance* parent);
-    std::vector<Instance*> GetChildren();
-    std::vector<Instance*> GetDescendants();
-    Instance* FindFirstChild(std::string name);
+    // Lua methods
+    const std::vector<Instance*>& GetChildren();
+    const std::vector<Instance*>& GetDescendants();
+    Instance* FindFirstChild(const std::string name);
     void Destroy();
-    bool IsA(std::string type);
+    bool IsA(const std::string className);
 
+    // Properties on every instance
+    const std::string ClassName;
+    std::string Name;
     Instance* Parent;
 
-    std::string Type;
-    std::string Name;
-
+    // Property bitfield for different instance classes
+    const uint32_t Properties;
+    // Specific properties
     Vec3 Position;
     Vec3 Size = Vec3(1, 1, 1);
     Color3 Color;
@@ -29,10 +34,8 @@ public:
     float Distance = 10.0f;
     std::string Code;
 
-    uint32_t GetProperties();
-
-    Instance* Index(std::string name);
-    void NewIndex(std::string key, Instance* parent);
+    Instance* Index(const std::string name);
+    void NewIndex(const std::string key, Instance* parent);
 
     Instance* child;
     Instance* next;
@@ -40,6 +43,9 @@ public:
     bool destroyed = false;
 
 private:
-    void AddDescendants(Instance* root, std::vector<Instance*>& descendants);
-    Instance* m_Game;
+    const uint32_t CalculateProperties();
+    void AddDescendants(Instance* root);
+
+    std::vector<Instance*> children;
+    std::vector<Instance*> descendants;
 };

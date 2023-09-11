@@ -20,6 +20,8 @@ void Usertypes::RegisterUsertypes()
 
         "Name",
         &Instance::Name,
+        "ClassName",
+        sol::readonly(&Instance::ClassName),
         "FindFirstChild",
         &Instance::FindFirstChild,
         "GetChildren",

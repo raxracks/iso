@@ -1,7 +1,8 @@
 #pragma once
 
 namespace Properties {
-enum {
+const enum {
+    None = 0,
     Position = 1 << 0,
     Size = 1 << 1,
     Color = 1 << 2,

@@ -12,15 +12,13 @@ int main()
     SetExitKey(KEY_NULL);
     SetConfigFlags(FLAG_WINDOW_RESIZABLE);
     InitWindow(800, 600, "iso");
-    SetTargetFPS(60);
+    // SetTargetFPS(60);
     MaximizeWindow();
     rlImGuiSetup(true);
 
     Game game;
     RenderTexture viewport = LoadRenderTexture(600, 400);
     Editor editor(game, viewport);
-
-    std::cout << game.camera << std::endl;
 
     bool editing = true;
 

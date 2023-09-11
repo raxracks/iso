@@ -1,18 +1,20 @@
 #include "Instance.hpp"
 #include <iostream>
 
-Instance::Instance(std::string type)
+Instance::Instance(const std::string className)
     : Camera(Cam(Position, Distance))
+    , ClassName(className)
+    , Name(className)
+    , Properties(CalculateProperties())
 {
-    Type = type;
-    Name = type;
 }
 
-Instance::Instance(std::string type, Instance* parent)
+Instance::Instance(const std::string className, Instance* parent)
     : Camera(Cam(Position, Distance))
+    , ClassName(className)
+    , Name(className)
+    , Properties(CalculateProperties())
 {
-    Type = type;
-    Name = type;
     SetParent(parent);
 }
 
@@ -45,9 +47,9 @@ void Instance::SetParent(Instance* parent)
     }
 }
 
-std::vector<Instance*> Instance::GetChildren()
+const std::vector<Instance*>& Instance::GetChildren()
 {
-    std::vector<Instance*> children;
+    children.clear();
     Instance* current = child;
     while (current != nullptr) {
         children.push_back(current);
@@ -57,16 +59,16 @@ std::vector<Instance*> Instance::GetChildren()
     return children;
 }
 
-std::vector<Instance*> Instance::GetDescendants()
+const std::vector<Instance*>& Instance::GetDescendants()
 {
-    std::vector<Instance*> descendants;
-    AddDescendants(this, descendants);
+    descendants.clear();
+    AddDescendants(this);
     return descendants;
 }
 
-Instance* Instance::FindFirstChild(std::string name)
+Instance* Instance::FindFirstChild(const std::string name)
 {
-    std::vector<Instance*> children = GetChildren();
+    const std::vector<Instance*>& children = GetChildren();
 
     auto it = std::ranges::find_if(children, [&](Instance* child) {
         return child->Name == name;
@@ -89,20 +91,20 @@ void Instance::Destroy()
     }
 }
 
-bool Instance::IsA(std::string type)
+bool Instance::IsA(const std::string className)
 {
-    return Type == type;
+    return ClassName == className;
 }
 
-void Instance::AddDescendants(Instance* root, std::vector<Instance*>& descendants)
+void Instance::AddDescendants(Instance* root)
 {
     for (Instance* child : root->GetChildren()) {
         descendants.push_back(child);
-        AddDescendants(child, descendants);
+        AddDescendants(child);
     }
 }
 
-Instance* Instance::Index(std::string name)
+Instance* Instance::Index(const std::string name)
 {
     if (name == "Parent")
         return Parent;
@@ -116,13 +118,13 @@ void Instance::NewIndex(std::string key, Instance* parent)
         SetParent(parent);
 }
 
-uint32_t Instance::GetProperties()
+const uint32_t Instance::CalculateProperties()
 {
-    if (Type == "Part") {
+    if (IsA("Part")) {
         return Properties::Position | Properties::Size | Properties::Color;
-    } else if (Type == "Script") {
+    } else if (IsA("Script")) {
         return Properties::Code;
-    } else if (Type == "Camera") {
+    } else if (IsA("Camera")) {
         return Properties::Position | Properties::Distance;
     }
 

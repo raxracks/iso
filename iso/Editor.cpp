@@ -118,14 +118,12 @@ void Editor::ShowMetrics()
 void Editor::ShowProperties()
 {
     if (m_SelectedChild) {
-        ImGui::Begin(("Properties - " + m_SelectedChild->Type + " \"" + m_SelectedChild->Name + "\"###properties").c_str());
+        ImGui::Begin(("Properties - " + m_SelectedChild->ClassName + " \"" + m_SelectedChild->Name + "\"###properties").c_str());
         {
             ImGui::Text("Name");
             ImGui::InputText("##name", &m_SelectedChild->Name);
-            ImGui::Text("Type");
-            ImGui::InputText("##type", &m_SelectedChild->Type);
 
-            uint32_t props = m_SelectedChild->GetProperties();
+            uint32_t props = m_SelectedChild->Properties;
             if (props & Properties::Position) {
                 ImGui::Text("Position");
                 ImGui::DragFloat3("##position", &m_SelectedChild->Position.X);
